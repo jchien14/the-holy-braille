@@ -2,6 +2,15 @@ package com.alec.heif.braille;
 
 import com.alec.heif.braille.util.SystemUiHider;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
@@ -13,13 +22,19 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  *
  * @see SystemUiHider
  */
-public class FullscreenActivity extends Activity {
+public class FullscreenActivity extends Activity implements CvCameraViewListener {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -56,9 +71,7 @@ public class FullscreenActivity extends Activity {
 
         setContentView(R.layout.activity_fullscreen);
         
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
 
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
@@ -137,8 +150,8 @@ public class FullscreenActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     	if(requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
     		if(resultCode == RESULT_OK) {
-                Toast.makeText(this, "Image saved to:\n" +
-                        data.getData(), Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Image saved to:\n" +
+                        //data.getData(), Toast.LENGTH_LONG).show();
     		}
     	}
     		
@@ -176,4 +189,29 @@ public class FullscreenActivity extends Activity {
         mHideHandler.removeCallbacks(mHideRunnable);
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
+    
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
+            }
+        }
+    };
+    
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
+    }
+
 }
