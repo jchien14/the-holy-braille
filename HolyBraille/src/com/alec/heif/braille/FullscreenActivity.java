@@ -1,6 +1,6 @@
-package com.alec.heif.theholybraille;
+package com.alec.heif.braille;
 
-import com.alec.heif.theholybraille.util.SystemUiHider;
+import com.alec.heif.braille.util.SystemUiHider;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

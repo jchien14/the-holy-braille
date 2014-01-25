@@ -1,4 +1,4 @@
-package com.alec.heif.theholybraille.util;
+package com.alec.heif.braille.util;
 
 import android.app.Activity;
 import android.view.View;
