@@ -14,7 +14,10 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -65,6 +68,7 @@ public class FullscreenActivity extends Activity implements
 		    Bitmap photo = (Bitmap) data.getExtras().get("data"); 
 			if (resultCode == RESULT_OK) {
 				ImageView img = new ImageView(this);
+				photo = thresholdImage(photo);
 				img.setImageBitmap(photo);
 				setContentView(img);
 				Toast.makeText(this, "Image recorded", Toast.LENGTH_LONG).show();
@@ -74,6 +78,68 @@ public class FullscreenActivity extends Activity implements
 			}
 		}
 	}
+	
+	private Bitmap thresholdImage(Bitmap bmp) {
+	    Mat mat = new Mat (bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
+	    Mat dst = new Mat(bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
+	    Utils.bitmapToMat(bmp, mat);
+	    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+		Log.i("THRESHOLD", "Started Doing This");
+		Imgproc.adaptiveThreshold(mat, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY , 3, 0);
+		
+		
+	    //byte buff[] = new byte[(int) (mat.total() * mat.channels())];
+    	//mat.get(0, 0, buff);
+
+    	/*for (int i = 0; i < buff.length; i++) {
+    		if( ((int) buff[i]) < 0) {
+    			buff[i] = (byte)-128;
+    		}
+    		else {
+    			buff[i] = (byte)128;
+    		}	
+    	}*/
+    	//Mat m = new Mat(bmp.getWidth(), bmp.getHeight(), );
+    	//Bitmap b = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ALPHA_8);
+    	//mat.put(0, 0, buff);
+        Utils.matToBitmap(dst, bmp);
+        return bmp;
+	}
+
+	    /*function otsu(histogram, total) {
+	        var sum = 0;
+	        for (var i = 1; i < 256; ++i)
+	            sum += i * histogram[i];
+	        var sumB = 0;
+	        var wB = 0;
+	        var wF = 0;
+	        var mB;
+	        var mF;
+	        var max = 0.0;
+	        var between = 0.0;
+	        var threshold1 = 0.0;
+	        var threshold2 = 0.0;
+	        for (var i = 0; i < 256; ++i) {
+	            wB += histogram[i];
+	            if (wB == 0)
+	                continue;
+	            wF = total - wB;
+	            if (wF == 0)
+	                break;
+	            sumB += i * histogram[i];
+	            mB = sumB / wB;
+	            mF = (sum - sumB) / wF;
+	            between = wB * wF * Math.pow(mB - mF, 2);
+	            if ( between >= max ) {
+	                threshold1 = i;
+	                if ( between > max ) {
+	                    threshold2 = i;
+	                }
+	                max = between;            
+	            }
+	        }
+	        return ( threshold1 + threshold2 ) / 2.0;
+	    }	*/    
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
