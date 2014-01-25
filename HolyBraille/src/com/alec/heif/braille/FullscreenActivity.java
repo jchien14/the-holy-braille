@@ -283,6 +283,7 @@ public class FullscreenActivity extends Activity implements
 	public void speak() {
 		// String text = BrailleUtils.parseBraille(array);
 		// This should be done somewhere else
+		Log.i("TTS", "Speech should be going!!");
 		String text = "testing 1 two 3! A1?";
 		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
