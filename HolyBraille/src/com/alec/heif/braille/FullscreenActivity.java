@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -68,16 +69,23 @@ public class FullscreenActivity extends Activity implements
 	// Text to Speech stuff
 	private TextToSpeech tts;
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_fullscreen);
 
-		tts = new TextToSpeech(this, this);
 
 		final View controlsView = findViewById(R.id.fullscreen_content_controls);
 		final View contentView = findViewById(R.id.fullscreen_content);
+		
+		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+		
+	    startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
+
+		tts = new TextToSpeech(this, this);
+
 
 		// Set up an instance of SystemUiHider to control the system UI for
 		// this activity.
@@ -156,8 +164,8 @@ public class FullscreenActivity extends Activity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
 			if (resultCode == RESULT_OK) {
-				// Toast.makeText(this, "Image saved to:\n" +
-				// data.getData(), Toast.LENGTH_LONG).show();
+				 Toast.makeText(this, "Image saved to:\n" +
+				 data.getData(), Toast.LENGTH_LONG).show();
 			}
 		}
 
@@ -203,7 +211,7 @@ public class FullscreenActivity extends Activity implements
 			switch (status) {
 			case LoaderCallbackInterface.SUCCESS: {
 				Log.i("OpenCV", "OpenCV loaded successfully");
-				mOpenCvCameraView.enableView();
+				//mOpenCvCameraView.enableView();
 			}
 				break;
 			default: {
