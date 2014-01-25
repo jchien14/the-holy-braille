@@ -190,6 +190,8 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
         mHideHandler.postDelayed(mHideRunnable, delayMillis);
     }
     
+    private CameraBridgeViewBase mOpenCvCameraView;
+    
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -213,5 +215,41 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
     }
+    
+    public void onPause()
+    {
+        super.onPause();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+    
+    public void onDestroy() {
+        super.onDestroy();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+	@Override
+	public void onCameraViewStarted(int width, int height) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onCameraViewStopped() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+		// TODO Auto-generated method stub
+	     return inputFrame.rgba();
+	}
+
+	@Override
+	public Mat onCameraFrame(Mat inputFrame) {
+		// TODO Auto-generated method stub
+		return inputFrame;
+	}
 
 }
