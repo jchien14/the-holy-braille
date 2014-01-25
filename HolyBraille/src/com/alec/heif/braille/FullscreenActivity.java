@@ -211,7 +211,7 @@ public class FullscreenActivity extends Activity implements
 			switch (status) {
 			case LoaderCallbackInterface.SUCCESS: {
 				Log.i("OpenCV", "OpenCV loaded successfully");
-				mOpenCvCameraView.enableView();
+				//mOpenCvCameraView.enableView();
 			}
 				break;
 			default: {
