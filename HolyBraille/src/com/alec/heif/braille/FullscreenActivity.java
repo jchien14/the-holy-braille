@@ -18,71 +18,61 @@ import org.opencv.core.Mat;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import android.util.Log;
 
 import android.speech.tts.TextToSpeech;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- * 
- * @see SystemUiHider
- */
 public class FullscreenActivity extends Activity implements
 		CvCameraViewListener, TextToSpeech.OnInitListener {
 
-	private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+	private static final int REQUEST_IMAGE_CAPTURE = 100;
 
 	// Text to Speech stuff
 	private TextToSpeech tts;
-	private String mCurrentPhotoPath;
+	
+//	final View controlsView = findViewById(R.id.fullscreen_content_controls);
+//	final View contentView = findViewById(R.id.fullscreen_content);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_fullscreen);
-
-		final View controlsView = findViewById(R.id.fullscreen_content_controls);
-		final View contentView = findViewById(R.id.fullscreen_content);
+		dispatchTakePictureIntent(); 
 		
-		Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-	    startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
-
 		tts = new TextToSpeech(this, this);
 	}
 
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE) {
-			if (resultCode == RESULT_OK) {
-				 Toast.makeText(this, "Image saved to:\n" +
-				 data.getData(), Toast.LENGTH_LONG).show();
-			}
-		}
-
+	private void dispatchTakePictureIntent() {
+	    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+	    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+	        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+	    }
 	}
 	
-	private File createImageFile() throws IOException {
-	    // Create an image file name
-	    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-	    String imageFileName = "JPEG_" + timeStamp + "_";
-	    File storageDir = Environment.getExternalStoragePublicDirectory(
-	            Environment.DIRECTORY_PICTURES);
-	    File image = File.createTempFile(
-	        imageFileName,  /* prefix */
-	        ".jpg",         /* suffix */
-	        storageDir      /* directory */
-	    );
-
-	    // Save a file: path for use with ACTION_VIEW intents
-	    mCurrentPhotoPath = "file:" + image.getAbsolutePath();
-	    return image;
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		System.out.println("X\n\n" + Integer.toString(resultCode) + "\n\nX");
+		if (requestCode == REQUEST_IMAGE_CAPTURE) {
+		    Bitmap photo = (Bitmap) data.getExtras().get("data"); 
+			if (resultCode == RESULT_OK) {
+				ImageView img = new ImageView(this);
+				img.setImageBitmap(photo);
+				setContentView(img);
+				Toast.makeText(this, "Image recorded", Toast.LENGTH_LONG).show();
+ 
+			} else if (resultCode == RESULT_CANCELED) {
+				System.out.println("WOO FIGURED OUT WHAT CANCELED DOES");
+			}
+		}
 	}
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -155,8 +145,8 @@ public class FullscreenActivity extends Activity implements
 	public void speak() {
 		// String text = BrailleUtils.parseBraille(array);
 		// This should be done somewhere else
-		String text = "testing";
-		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+	//	String text = "testing";
+	//	tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 
 }
