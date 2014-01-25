@@ -45,9 +45,12 @@ public class BrailleUtils {
 	                        "u", "ing", "x", OPEN_QUOTE_OR_QUESTION, "v", "the", "and", CLOSE_QUOTE, // 56
 	                        "z", NUMBER, "y", PAREN, "of", "with", "for" }; // 63
 	
+	public static String parseBrailleWithLineBreaks(int[][] brailleArray) {
+		return parseBrailleSecondPass(parseBrailleFirstPass(brailleArray)).trim();
+	}
 	
 	public static String parseBraille(int[][] brailleArray) {
-		return parseBrailleSecondPass(parseBrailleFirstPass(brailleArray)).trim();
+		return parseBrailleWithLineBreaks(brailleArray).replaceAll("\n", "");
 	}
 	
 	/**
@@ -80,6 +83,7 @@ public class BrailleUtils {
 						brailleArray[3*rowCount + 1][2*rowLet], brailleArray[3*rowCount + 1][2*rowLet + 1],
 						brailleArray[3*rowCount + 2][2*rowLet], brailleArray[3*rowCount + 2][2*rowLet + 1]);
 			}
+			output += "\n";
 		}
 		if (numRowsToPad == 2) { 
 			for (int rowLet = 0; rowLet < numLettersInRow; rowLet++) {

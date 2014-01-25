@@ -1,7 +1,10 @@
 package com.alec.heif.braille;
 
+import java.util.Locale;
+
 import com.alec.heif.braille.util.SystemUiHider;
 
+import org.opencv.R;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
@@ -28,13 +31,15 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
+import android.speech.tts.TextToSpeech;
+
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
  * status bar and navigation/system bar) with user interaction.
  *
  * @see SystemUiHider
  */
-public class FullscreenActivity extends Activity implements CvCameraViewListener {
+public class FullscreenActivity extends Activity implements CvCameraViewListener, TextToSpeech.OnInitListener {
     /**
      * Whether or not the system UI should be auto-hidden after
      * {@link #AUTO_HIDE_DELAY_MILLIS} milliseconds.
@@ -64,6 +69,9 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
     private SystemUiHider mSystemUiHider;
 
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    
+    // Text to Speech stuff
+    private TextToSpeech tts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +79,7 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
 
         setContentView(R.layout.activity_fullscreen);
         
-
+        tts = new TextToSpeech(this, this);
 
 
         final View controlsView = findViewById(R.id.fullscreen_content_controls);
@@ -210,23 +218,27 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
     };
     
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, mLoaderCallback);
     }
     
-    public void onPause()
-    {
+    public void onPause() {
         super.onPause();
-        if (mOpenCvCameraView != null)
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
+        }
     }
     
     public void onDestroy() {
-        super.onDestroy();
-        if (mOpenCvCameraView != null)
+        if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
+        }
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+        }
+        super.onDestroy();
     }
 
 	@Override
@@ -250,6 +262,30 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
 	public Mat onCameraFrame(Mat inputFrame) {
 		// TODO Auto-generated method stub
 		return inputFrame;
+	}
+
+	/**
+	 * This is for Text to Speech
+	 */
+	@Override
+	public void onInit(int status) {
+		if (status == TextToSpeech.SUCCESS) {
+            int result = tts.setLanguage(Locale.US);
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTS", "This Language is not supported");
+            } else {
+                speak();
+            }
+        } else {
+            Log.e("TTS", "Initilization Failed!");
+        }
+	}
+	
+	public void speak() {
+	//	String text = BrailleUtils.parseBraille(array);
+		// This should be done somewhere else
+		String text = "testing 1 two 3! A1?";
+		tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
 	}
 
 }
