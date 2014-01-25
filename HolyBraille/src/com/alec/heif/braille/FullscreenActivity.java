@@ -1,5 +1,6 @@
 package com.alec.heif.braille;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -65,8 +66,8 @@ public class FullscreenActivity extends Activity implements
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		System.out.println("X\n\n" + Integer.toString(resultCode) + "\n\nX");
 		if (requestCode == REQUEST_IMAGE_CAPTURE) {
-		    Bitmap photo = (Bitmap) data.getExtras().get("data"); 
 			if (resultCode == RESULT_OK) {
+				Bitmap photo = (Bitmap) data.getExtras().get("data");
 				ImageView img = new ImageView(this);
 				photo = thresholdImage(photo);
 				img.setImageBitmap(photo);
@@ -140,6 +141,27 @@ public class FullscreenActivity extends Activity implements
 	        }
 	        return ( threshold1 + threshold2 ) / 2.0;
 	    }	*/    
+
+// Maybe useful stuff for circle detection drawing?
+//	private Bitmap test(Bitmap bmp) {
+//		Mat imgSource = new Mat(), imgCirclesOut = new Mat();
+//		Utils.bitmapToMat(bmp , imgSource);
+//		Imgproc.cvtColor(imgSource, imgSource, Imgproc.COLOR_BGR2GRAY);
+//
+//		Imgproc.GaussianBlur( imgSource, imgSource, new Size(9, 9), 2, 2 );
+//		Imgproc.HoughCircles( imgSource, imgCirclesOut, Imgproc.CV_HOUGH_GRADIENT, 1, imgSource.rows()/8, 200, 100, 0, 0 );
+//		float circle[] = new float[3];
+//		for (int i = 0; i < imgCirclesOut.cols(); i++) {
+//		    imgCirclesOut.get(0, i, circle);
+//		    org.opencv.core.Point center = new org.opencv.core.Point();
+//		    center.x = circle[0];
+//		    center.y = circle[1];
+//		    Core.circle(imgSource, center, (int) circle[2], new Scalar(255,0,0,255), 4);
+//		}
+//		Bitmap bmp2 = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+//		Utils.matToBitmap(imgSource, bmp2);
+//		return bmp2;
+//	}
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
