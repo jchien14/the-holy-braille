@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import com.alec.heif.braille.util.SystemUiHider;
 
-import org.opencv.R;
+import com.alec.heif.braille.R;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener;
@@ -206,7 +206,7 @@ public class FullscreenActivity extends Activity implements CvCameraViewListener
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    Log.i(TAG, "OpenCV loaded successfully");
+                    Log.i("OpenCV", "OpenCV loaded successfully");
                     mOpenCvCameraView.enableView();
                 } break;
                 default:
