@@ -188,9 +188,7 @@ public class BitDotMapper {
 				if (bitMap[i][j] == -1) {
 					bitMap[i][j] = 1; 
 				}
-				System.out.print(bitMap[i][j]);
 			} 
-			System.out.print("\n");
 		}
 		return brailleDots;
 	}
