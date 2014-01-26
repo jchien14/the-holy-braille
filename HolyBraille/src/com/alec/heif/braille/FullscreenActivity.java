@@ -187,8 +187,8 @@ public class FullscreenActivity extends Activity implements
     	//mat.put(0, 0, buff);
         //return bmpMono;
 		
-		// brailleDots = (new BitDotMapper(mapData)).parse();
-		brailleDots = ClusterFinder.parse(mapData);
+	    brailleDots = (new BitDotMapper(mapData)).parse();
+		//brailleDots = ClusterFinder.parse(mapData);
 		
 	    /**
 	     * DEPRECATED: Original filters, makes the cool sketch effect. Scrapped because too inaccurate.
