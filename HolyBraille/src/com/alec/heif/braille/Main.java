@@ -8,7 +8,7 @@ package com.alec.heif.braille;
 public class Main {
 
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		int[][] correct = new int[][] {
 				{0,0,1,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,1,0,0,0,0,1,1,0,0,1,1,1},
@@ -46,35 +46,17 @@ public class Main {
 				{0,1,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1},
 				{0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0,0,1}
 		};
-
-		int[][] a = BitDotMapper.test1();
-		int[][] b = BitDotMapper.test2();
-		int[][] c = BitDotMapper.test3();
-
-		int[][] d = new int[a.length+b.length+c.length][];
-		for (int i = 0; i < a.length; i++) {
-			d[i] = a[i];
-		}
-		for (int i = 0; i < b.length; i++) {
-			d[a.length + i] = b[i];
-		}
-		for (int i = 0; i < c.length; i++) {
-			d[a.length + b.length + i] = c[i];
-		}
-
-		System.out.println("Num of d rows: " + d.length);
-		System.out.println("Num of d cols: " + d[0].length);
+		int[][] bitsToParse = BitDotMapper.importTestBitMap("/Users/jchien/Documents/workspace/helpimblindandicantread/HolyBraille/libs/testBitMap.txt");
+		System.out.println("Num of g rows: " + bitsToParse.length);
+		System.out.println("Num of g cols: " + bitsToParse[0].length);
 		
-		BitDotMapper bitDotMapper = new BitDotMapper(d);
-		bitDotMapper.setOffsets();
-		System.out.println(bitDotMapper.DOT_HEIGHT);
-		System.out.println(bitDotMapper.DOT_WIDTH);
+		BitDotMapper bitDotMapper = new BitDotMapper(bitsToParse);
 		int[][] brailleDots = bitDotMapper.parse();
 		System.out.println(BrailleUtils.parseBraille(brailleDots));
 		for (int i = 0; i < brailleDots.length; i++) {
 			for (int j = 0; j < brailleDots[0].length; j++) {
 				if (correct[i][j] != brailleDots[i][j]) {
-					//System.out.println("Check (" + i + "," + j + ")");
+					System.out.println("Check (" + i + "," + j + ")");
 				}
 			}
 		}

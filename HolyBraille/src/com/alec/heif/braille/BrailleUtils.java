@@ -1,5 +1,6 @@
 package com.alec.heif.braille;
 
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,8 +34,8 @@ public class BrailleUtils {
 
 	public static final Map<String, String> ALTERNATE_TRANSCRIPTIONS = new HashMap<String, String>(){{ 
 		put("a", "1"); put("b", "2"); put("c", "3"); put("d", "4"); put("e", "5"); put("f", "6"); // LOL anonymous
-		put("g", "7"); put("h", "8"); put("i", "9"); put("j", "0"); put(NUMBER, "ble");   // inner classes fuck Java.
-		put(",", "ea"); put(";", "bb"); put(":", "cc"); put(".", "dd"); put("!", "ff"); put(PAREN, "gg"); }}; //Sucks lotsa thick dick.
+		put("g", "7"); put("h", "8"); put("i", "9"); put("j", "0"); put(NUMBER, "ble");   // inner class fuck Java
+		put(",", "ea"); put(";", "bb"); put(":", "cc"); put(".", "dd"); put("!", "ff"); put(PAREN, "gg"); }}; 
 
 	public static final String[] BRAILLE_ALPHABET = new String[] { " ", "a", ACCENT, "c", ",", // 4
 	                        "b", "i", "f", ABBREVIATION, "e", ABBREVIATION, "d", ":", "h", "j", "g", "'", // 16
@@ -114,22 +115,37 @@ public class BrailleUtils {
 	 */
 	static String parseBrailleSecondPass(String firstPassOutput) {
 		while (firstPassOutput.contains(NUMBER)) {
-			System.out.println(firstPassOutput);
 			int indOfReplace = firstPassOutput.indexOf(NUMBER) + NUMBER.length();
-			String replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+			String replaceFrom;
+			if (indOfReplace >= firstPassOutput.length()) {
+				replaceFrom = "";
+			} else {
+				replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+			}
 			String replaceTo = ALTERNATE_TRANSCRIPTIONS.get(replaceFrom);
+			if (replaceTo == null) replaceTo = "*";
 			firstPassOutput = firstPassOutput.replace(NUMBER + replaceFrom, replaceTo);
 		}
 		while (firstPassOutput.contains(UPPERCASE)) {
 			int indOfReplace = firstPassOutput.indexOf(UPPERCASE) + UPPERCASE.length();
-			String replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+			String replaceFrom;
+			if (indOfReplace >= firstPassOutput.length()) {
+				replaceFrom = "";
+			} else {
+				replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+			}
 			String replaceTo = replaceFrom.toUpperCase();
 			firstPassOutput = firstPassOutput.replace(UPPERCASE + replaceFrom, replaceTo);
 		}
 		for (String unsupportedModifier : UNSUPPORTED_MODIFIERS) {
 			while (firstPassOutput.contains(unsupportedModifier)) {
 				int indOfReplace = firstPassOutput.indexOf(unsupportedModifier) + unsupportedModifier.length();
-				String replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+				String replaceFrom;
+				if (indOfReplace >= firstPassOutput.length()) {
+					replaceFrom = "";
+				} else {
+					replaceFrom = Character.toString(firstPassOutput.charAt(indOfReplace));
+				}
 				String replaceTo = UNKNOWN_OR_UNSUPPORTED;
 				firstPassOutput = firstPassOutput.replace(unsupportedModifier + replaceFrom, replaceTo);
 			}

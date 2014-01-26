@@ -16,12 +16,15 @@ import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import android.util.Log;
@@ -35,25 +38,25 @@ public class FullscreenActivity extends Activity implements
 
 	// Text to Speech stuff
 	private TextToSpeech tts;
-	
+	private int[][] brailleDots;
+	boolean ttsReady;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_fullscreen);
-		dispatchTakePictureIntent(); 
-		
 		tts = new TextToSpeech(this, this);
+		dispatchTakePictureIntent(); 
 	}
 
 	private void dispatchTakePictureIntent() {
 	    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 	    
 	    //Save picture taken - disabled for now.
-	    //if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-	        //startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-	    //}
+	    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+	        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+	    }
 	}
 	
 	/**
@@ -63,13 +66,13 @@ public class FullscreenActivity extends Activity implements
 		if (requestCode == REQUEST_IMAGE_CAPTURE) {
 			if (resultCode == RESULT_OK) {
 				Bitmap photo = (Bitmap) data.getExtras().get("data");
-				ImageView img = new ImageView(this);
 				//Parse image, receive it and show the user. 
 				photo = thresholdImage(photo);
+				setContentView(R.layout.rview);
+				ImageView img = (ImageView) findViewById(R.id.imageView);
 				img.setImageBitmap(photo);
-				setContentView(img);
-				Toast.makeText(this, "Image recorded", Toast.LENGTH_LONG).show();
- 
+				Toast.makeText(this, "Image processing", Toast.LENGTH_LONG).show();
+				speak();
 			}
 		}
 	}
@@ -114,15 +117,7 @@ public class FullscreenActivity extends Activity implements
 	    Mat mat = new Mat (bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
 	    Utils.bitmapToMat(bmp, mat);
 	    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-	    
-	    /**
-	     * DEPRECATED: Original filters, makes the cool sketch effect. Scrapped because too inaccurate.
-	     */
-		//Imgproc.adaptiveThreshold(mat, dst, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY , 7, 0);
-		//Imgproc.bilateralFilter(dst, mat, 10, 50, 50);
-		//Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
-        //Utils.matToBitmap(mat, bmpMono);
-	    
+	    	    
 	    /**
 	     * DEPRECATED: Parse map data, also no longer needed since we use OpenCV to handle thresholding.
 	     */
@@ -191,53 +186,24 @@ public class FullscreenActivity extends Activity implements
     	//Bitmap b = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ALPHA_8);
     	//mat.put(0, 0, buff);
         //return bmpMono;
+		brailleDots = (new BitDotMapper(mapData)).parse();
 		
+	    /**
+	     * DEPRECATED: Original filters, makes the cool sketch effect. Scrapped because too inaccurate.
+	     */
+		Mat dst = new Mat(bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
+		Imgproc.adaptiveThreshold(mat, dst, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY , 7, 0);
+		Imgproc.bilateralFilter(dst, mat, 10, 50, 50);
+		Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(mat, bmpMono);
 		/**
 		 * Turn binary mat into a bitmap, export it.
 		 */
-		Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(binMat, bmpMono);
+//		Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+//        Utils.matToBitmap(binMat, bmpMono);
         return bmpMono;
-
 	}
-		/**
-		 * DEPRECATED: Source code for Otsu's algorithm, in Javascript.
-		 */
-	    /*function otsu(histogram, total) {
-	        var sum = 0;
-	        for (var i = 1; i < 256; ++i)
-	            sum += i * histogram[i];
-	        var sumB = 0;
-	        var wB = 0;
-	        var wF = 0;
-	        var mB;
-	        var mF;
-	        var max = 0.0;
-	        var between = 0.0;
-	        var threshold1 = 0.0;
-	        var threshold2 = 0.0;
-	        for (var i = 0; i < 256; ++i) {
-	            wB += histogram[i];
-	            if (wB == 0)
-	                continue;
-	            wF = total - wB;
-	            if (wF == 0)
-	                break;
-	            sumB += i * histogram[i];
-	            mB = sumB / wB;
-	            mF = (sum - sumB) / wF;
-	            between = wB * wF * Math.pow(mB - mF, 2);
-	            if ( between >= max ) {
-	                threshold1 = i;
-	                if ( between > max ) {
-	                    threshold2 = i;
-	                }
-	                max = between;            
-	            }
-	        }
-	        return ( threshold1 + threshold2 ) / 2.0;
-	    }	*/    
-
+	
 	/**
 	 * DEPRECATED: First attempt to use circles, didn't go far.
 	 */
@@ -338,12 +304,12 @@ public class FullscreenActivity extends Activity implements
 	public void onInit(int status) {
 		if (status == TextToSpeech.SUCCESS) {
 			int result = tts.setLanguage(Locale.US);
-			tts.setSpeechRate(0.8f);
+			tts.setSpeechRate(0.7f);
 			if (result == TextToSpeech.LANG_MISSING_DATA
 					|| result == TextToSpeech.LANG_NOT_SUPPORTED) {
 				Log.e("TTS", "This Language is not supported");
 			} else {
-				speak();
+				ttsReady = true;
 			}
 		} else {
 			Log.e("TTS", "Initilization Failed!");
@@ -351,10 +317,13 @@ public class FullscreenActivity extends Activity implements
 	}
 
 	public void speak() {
-		// String text = BrailleUtils.parseBraille(array);
-		// This should be done somewhere else
-	//	String text = "testing";
-	//	tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+		String text = BrailleUtils.parseBraille(brailleDots);
+		TextView myText = (TextView) findViewById(R.id.translation);
+		myText.setText(text);
+		if (ttsReady) {
+			Log.i("TTS", "Trying to speak!");
+			tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+		}
 	}
 
 }
