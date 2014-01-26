@@ -2,9 +2,13 @@ package com.alec.heif.braille;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import com.alec.heif.braille.util.SystemUiHider;
@@ -18,11 +22,13 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -63,6 +69,9 @@ public class FullscreenActivity extends Activity implements
 	    }
 	}
 	
+	
+	//private int[][] getDotRelativePositions()
+	
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		System.out.println("X\n\n" + Integer.toString(resultCode) + "\n\nX");
 		if (requestCode == REQUEST_IMAGE_CAPTURE) {
@@ -80,31 +89,124 @@ public class FullscreenActivity extends Activity implements
 		}
 	}
 	
-	private Bitmap thresholdImage(Bitmap bmp) {
+	/*private Bitmap advancedThresholdImage(Bitmap bmp) {
 	    Mat mat = new Mat (bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
-	    Mat dst = new Mat(bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
+	    Mat dst = new Mat(bmp.getWidth(), bmp.getHeight(), CvType.CV_16UC3);
 	    Utils.bitmapToMat(bmp, mat);
 	    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
-		Log.i("THRESHOLD", "Started Doing This");
-		Imgproc.adaptiveThreshold(mat, dst, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY , 3, 0);
+	    Mat circles = new Mat(1000, 1000, CvType.CV_16UC3);
+        Imgproc.HoughCircles(mat, circles, Imgproc.CV_HOUGH_GRADIENT, 1, 8, 1, 8, 2, 6);
+        for(int col = 0; col < circles.cols(); col++) {
+        	//Log.i("X-CENTER", Double.toString(circles.get(0, col)[0]));
+        	//Log.i("Y-CENTER", Double.toString(circles.get(0, col)[1]));
+        	//Log.i("RADIUS", Double.toString(circles.get(0, col)[2]));
+        }
+        Log.e("TOTAL CIRCLES" , Integer.toString(circles.cols()));
+        int[][] mapData = getData(mat, 255);
+        Mat binMat = new Mat(mapData.length, mapData[0].length, CvType.CV_8UC1);
+        for(int i = 0; i < mapData.length; i++) {
+        	for(int j = 0; j < mapData[0].length; j++) {
+        		byte[] md = {(byte)(mapData[i][j])};
+        		binMat.put(i, j, md);
+        	}
+        }
+		Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(binMat, bmpMono);
+        Log.i("COMPLETE", "DICKS");
+        return bmpMono;
+	}*/
+	
+	
+	private Bitmap thresholdImage(Bitmap bmp) {
+	    Mat mat = new Mat (bmp.getWidth(), bmp.getHeight(), CvType.CV_8UC1);
+	    Utils.bitmapToMat(bmp, mat);
+	    Imgproc.cvtColor(mat, mat, Imgproc.COLOR_RGB2GRAY);
+	    
+		//Imgproc.adaptiveThreshold(mat, dst, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY , 7, 0);
+		//Imgproc.bilateralFilter(dst, mat, 10, 50, 50);
+		//Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+		//Log.i("THRESHOLD", "Width is " + Integer.toString(bmpMono.getWidth()));
+		//Log.i("THRESHOLD", "Height is " + Integer.toString(bmpMono.getHeight()));
 		
-		
-	    //byte buff[] = new byte[(int) (mat.total() * mat.channels())];
-    	//mat.get(0, 0, buff);
+//		String filename = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
+//		FileOutputStream fOut = null;
+//		File file = new File(filename, "bitmap_mono.png");
+//		try {
+//			fOut = new FileOutputStream(file);
+//			bmpMono.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+//			Log.i("SUCCESS?", file.toString());
+//			fOut.flush();
+//			fOut.close();
+//			
+//			//MediaStore.Images.Media.insertImage(getContentResolver(),file.getAbsolutePath(),file.getName(),file.getName());
+//		}
+//		catch(Exception e){
+//			Log.i("CODE", "FAILED TO SAVE");
+//		}
+        //Utils.matToBitmap(mat, bmpMono);
+        Mat binMat = new Mat(mat.rows(), mat.cols(), CvType.CV_8UC1);
+        /*for(int i = 0; i < mapData.length; i++) {
+        	for(int j = 0; j < mapData[0].length; j++) {
+        		byte[] md = {(byte)(mapData[i][j])};
+        		binMat.put(i, j, md);
+        	}
+        }*/
+        Imgproc.threshold(mat, binMat, 127.0, 255, Imgproc.THRESH_OTSU);
+		StringBuilder sb = new StringBuilder("[ ");
+		int[][] mapData = new int[mat.rows()][mat.cols()];
+		for(int row = 0; row < mat.rows(); row++) {
+			sb.append("[");
+			for(int col = 0; col < mat.cols(); col++) {
+				double val = mat.get(row, col)[0];
+				if(val >= 127) {
+					mapData[row][col] = 1;
+					sb.append("1,");
+				}
+				else {
+					mapData[row][col] = 0;
+					sb.append("0,");
+				}
+			}
+			sb.deleteCharAt(sb.length()-1);
+			sb.append("],");
+		}
+		sb.deleteCharAt(sb.length()-1);
+		sb.append("]");
+		try {
+			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString(), "output.txt");
+			PrintWriter fOut = new PrintWriter(file);
+			fOut.print(sb.toString());
+			fOut.flush();
+			fOut.close();
+		}
+		catch(Exception e) {
+			Log.i("FAIL", "fail");
+			e.printStackTrace();
+		}
+        //List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        //Imgproc.findContours(binMat, contours, new Mat(mapData.length, mapData[0].length, CvType.CV_8UC4), Imgproc.RETR_LIST, Imgproc.CHAIN_APPROX_SIMPLE);
+		/*try {
+			File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString(), "output.txt");
+			PrintWriter fOut = new PrintWriter(file);
+			fOut.print(sb.toString());
+			fOut.flush();
+			fOut.close();
+		}
+		catch(Exception e) {
+			Log.i("FAIL", "fail");
+			e.printStackTrace();
+		}*/
 
-    	/*for (int i = 0; i < buff.length; i++) {
-    		if( ((int) buff[i]) < 0) {
-    			buff[i] = (byte)-128;
-    		}
-    		else {
-    			buff[i] = (byte)128;
-    		}	
-    	}*/
+
     	//Mat m = new Mat(bmp.getWidth(), bmp.getHeight(), );
     	//Bitmap b = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ALPHA_8);
     	//mat.put(0, 0, buff);
-        Utils.matToBitmap(dst, bmp);
-        return bmp;
+        //return bmpMono;
+		Bitmap bmpMono = Bitmap.createBitmap(bmp.getWidth(), bmp.getHeight(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(binMat, bmpMono);
+        Log.i("COMPLETE", "DICKS");
+        return bmpMono;
+
 	}
 
 	    /*function otsu(histogram, total) {
@@ -168,7 +270,6 @@ public class FullscreenActivity extends Activity implements
 		public void onManagerConnected(int status) {
 			switch (status) {
 			case LoaderCallbackInterface.SUCCESS: 
-				Log.i("OpenCV", "OpenCV loaded successfully");
 				break;
 			default: 
 				super.onManagerConnected(status);
