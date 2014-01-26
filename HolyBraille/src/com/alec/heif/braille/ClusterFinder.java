@@ -1,6 +1,7 @@
+package com.alec.heif.braille;
+
 import java.io.*;
 import java.util.*;
-
 
 public class ClusterFinder {
 
@@ -40,17 +41,15 @@ public class ClusterFinder {
 			{0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0,0,1}
 		};
 	
-	public static void main(String[] args) throws IOException {
-		BufferedReader in = new BufferedReader(new FileReader("sampleInput.txt"));
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("output.txt")));
-		int m = 408;
-		int n = 230;
+	public static void parse(int[][] bitMap) {
+
+		int m = bitMap.length;
+		int n = bitMap[0].length;
 		boolean[][] grid = new boolean[m][n];
 		
 		for (int i = 0; i < m; i++) {
-			String s = in.readLine();
 			for (int j = 0; j < n; j++) {
-				if (s.charAt(j) == '0') {
+				if (bitMap[i][j] == 0) {
 					grid[i][j] = true; //flip 0s and 1s
 				} else {
 					grid[i][j] = false;
@@ -76,15 +75,17 @@ public class ClusterFinder {
 		
 		boolean[][] colGrid = new boolean[m][n];
 		int n2 = compressCols(rowGrid, colGrid, m2, n);
+
+		int[][] result = new int[m2][n2];
 		
-		System.out.println(m2 + "," + n2);
+//		System.out.println(m2 + "," + n2);
 		for (int i = 0; i < m2; i++) {
-			StringBuilder sb = new StringBuilder();
+//			StringBuilder sb = new StringBuilder();
 			for (int j = 0; j < n2; j++) {
-				if (colGrid[i][j]) {
-					sb.append('1');
+				if (colGrid[m2][n2]) {
+					result[m2][n2] = 1;
 				} else {
-					sb.append('0');
+					result[m2][n2] = 0;
 				}
 				
 				// uncomment for visual check of all bits
@@ -94,12 +95,9 @@ public class ClusterFinder {
 //					sb.append('0');
 //				}
 			}
-			out.println(sb.toString());
+//			out.println(sb.toString());
 		}
 		
-		
-		in.close();
-		out.close();
 	}
 	
 	public static boolean isBlock(boolean[][] grid, int row, int col) {
