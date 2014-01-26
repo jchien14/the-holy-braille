@@ -1,47 +1,16 @@
 package com.alec.heif.braille;
 
-import static org.junit.Assert.*;
-import org.junit.Test;
-import com.alec.heif.braille.BrailleUtils;
-
-/**
- * LOL WHO THE FUCK WRITES TEST CASES FOR A HACKATHON?
- * @author jchien
- * Oh, that's who.
+/** 
+ * Note this cannot be run from within the Android project
+ * but was useful for quickly iterating on various BitDotMapper
+ * implementations in a separate java project.
  */
-public class BrailleUtilsTest {
-	@Test
-	public void brailleToLetter_simple() {
-		assertEquals("n", BrailleUtils.brailleToLetter(1, 1, 0, 1, 1, 0));
-	}
-	
-	@Test
-	public void parseBraille_simple() {
-		int[][] squareDown = {{1, 1, 1, 0}, {0, 1, 0, 1}, {0, 0, 1, 0}, {0, 1, 1, 1}, {1, 1, 0, 1}, {0, 1, 1, 0}};
-		assertEquals("down", BrailleUtils.parseBraille(squareDown));
-	}
-	
-	@Test
-	public void parseBraille_numb3rsCaps() {
-		int[][] A1 = {{0, 0, 1, 0}, {0, 0, 0, 0}, {0, 1, 0, 0}, {0, 1, 1, 0}, {0, 1, 0, 0}, {1, 1, 0, 0}};
-		assertEquals("A1", BrailleUtils.parseBraille(A1));
-	}
-	
-	@Test
-	public void parseBraille_missingZeros() {
-		int[][] squareDown = {{1, 1, 1}, {0, 1, 0, 1}, {0, 0, 1}, {0, 1, 1, 1}, {1, 1, 0, 1}, {0, 1, 1}};
-		assertEquals("down", BrailleUtils.parseBraille(squareDown));
-	}
+public class Main {
 
-	@Test
-	public void parseBraille_needPadding() {
-		int[][] squareDown = {{1, 1, 1}, {0, 1, 0, 1}, {0, 0, 1}, {0, 1, 1, 1}, {1, 1, 0, 1}, {0, 1, 1}, {1}};
-		assertEquals("downa", BrailleUtils.parseBraille(squareDown));
-	}
-	
-	@Test
-	public void parseBraille_complex() {
-		int[][] complex = new int[][] {
+
+	public static void main(String[] args) {
+		
+		int[][] correct = new int[][] {
 				{0,0,1,1,1,0,1,0,0,0,0,1,1,0,0,1,0,1,1,0,0,0,0,1,1,0,0,1,1,1},
 				{0,0,0,1,0,1,0,0,0,0,1,1,1,1,1,0,1,1,0,1,0,0,0,1,0,0,0,1,1,0},
 				{0,1,1,1,1,0,1,1,0,0,0,1,1,0,0,0,1,0,0,0,0,0,1,1,0,0,1,1,0,0},
@@ -75,9 +44,42 @@ public class BrailleUtilsTest {
 				{0,0,0,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0},
 				{1,0,0,0,1,0,0,1,0,0,0,1,1,0,0,1,0,1,0,0,0,0,1,1,0,0,1,0,0,0},
 				{0,1,0,0,0,0,1,0,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1},
-				{0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0,0,1}};
-		assertEquals("You write 16 dots,e tat will you see? A 6 letter word whose" +
-				" meaning will be sibilant sounds, written in a code that is not " +
-				"the same as this MO.", BrailleUtils.parseBraille(complex));
+				{0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0,0,1}
+		};
+
+		int[][] a = BitDotMapper.test1();
+		int[][] b = BitDotMapper.test2();
+		int[][] c = BitDotMapper.test3();
+
+		int[][] d = new int[a.length+b.length+c.length][];
+		for (int i = 0; i < a.length; i++) {
+			d[i] = a[i];
+		}
+		for (int i = 0; i < b.length; i++) {
+			d[a.length + i] = b[i];
+		}
+		for (int i = 0; i < c.length; i++) {
+			d[a.length + b.length + i] = c[i];
+		}
+
+		System.out.println("Num of d rows: " + d.length);
+		System.out.println("Num of d cols: " + d[0].length);
+		
+		BitDotMapper bitDotMapper = new BitDotMapper(d);
+		bitDotMapper.setOffsets();
+		System.out.println(bitDotMapper.DOT_HEIGHT);
+		System.out.println(bitDotMapper.DOT_WIDTH);
+		int[][] brailleDots = bitDotMapper.parse();
+		System.out.println(BrailleUtils.parseBraille(brailleDots));
+		for (int i = 0; i < brailleDots.length; i++) {
+			for (int j = 0; j < brailleDots[0].length; j++) {
+				if (correct[i][j] != brailleDots[i][j]) {
+					//System.out.println("Check (" + i + "," + j + ")");
+				}
+			}
+		}
+
+
 	}
+
 }
