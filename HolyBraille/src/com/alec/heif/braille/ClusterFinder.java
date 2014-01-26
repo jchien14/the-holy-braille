@@ -41,7 +41,7 @@ public class ClusterFinder {
 			{0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,1,1,0,0,1}
 		};
 	
-	public static void parse(int[][] bitMap) {
+	public static int[][] parse(int[][] bitMap) {
 
 		int m = bitMap.length;
 		int n = bitMap[0].length;
@@ -97,7 +97,7 @@ public class ClusterFinder {
 			}
 //			out.println(sb.toString());
 		}
-		
+		return result;
 	}
 	
 	public static boolean isBlock(boolean[][] grid, int row, int col) {
